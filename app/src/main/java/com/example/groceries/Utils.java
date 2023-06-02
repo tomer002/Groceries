@@ -11,10 +11,6 @@ import android.app.Dialog;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
@@ -64,16 +60,13 @@ public class Utils {
 
     public static void addPersonToListByUsername(Dialog dialogToCloseOnSuccess, Activity activity, String listId, String username){
         database.getReference(USERNAME_TO_ID).child(username)
-                .get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DataSnapshot> task) {
-                        if (!task.isSuccessful()||!task.getResult().exists()) {
-                            Toast.makeText(activity, "user does not exist", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                        String uid=(String)task.getResult().getValue();
-                        addPersonToList(dialogToCloseOnSuccess,activity,listId,uid);
+                .get().addOnCompleteListener(task -> {
+                    if (!task.isSuccessful() || !task.getResult().exists()) {
+                        Toast.makeText(activity, "user does not exist", Toast.LENGTH_SHORT).show();
+                        return;
                     }
+                    String uid = (String) task.getResult().getValue();
+                    addPersonToList(dialogToCloseOnSuccess, activity, listId, uid);
                 });
     }
 
@@ -106,17 +99,14 @@ public class Utils {
 
     public static void usernameSearch(String username, UsernameSearchListener listener) {
         Query query = database.getReference(USERS).orderByChild(USERNAME).equalTo(username);
-        query.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DataSnapshot> task) {
-                if (!task.isSuccessful())return;
-                DataSnapshot snapshot=task.getResult();
-                if (snapshot.exists()) {
-                    DatabaseReference userRef = snapshot.getChildren().iterator().next().getRef();
-                    listener.listen(userRef, UsernameSearchListener.EXISTS);
-                } else {
-                    listener.listen(null, UsernameSearchListener.DOES_NOT_EXIST);
-                }
+        query.get().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) return;
+            DataSnapshot snapshot = task.getResult();
+            if (snapshot.exists()) {
+                DatabaseReference userRef = snapshot.getChildren().iterator().next().getRef();
+                listener.listen(userRef, UsernameSearchListener.EXISTS);
+            } else {
+                listener.listen(null, UsernameSearchListener.DOES_NOT_EXIST);
             }
         });
     }
