@@ -74,7 +74,7 @@ public class SettingsActivity extends AppCompatActivity {
                     dialog.cancel();
                     return;
                 }
-                database.getReference(USERS + "/" + mAuth.getUid() + "/" + USERNAME).setValue(newNickname);
+                database.getReference(USERS + "/" + mAuth.getUid() + "/" + NICKNAME).setValue(newNickname);
                 nickname = newNickname;
                 ((TextView) findViewById(R.id.nickname)).setText("nickname: " + nickname);
                 dialog.cancel();
