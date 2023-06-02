@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
 
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class UserAdapter extends ArrayAdapter<UserAdapter.User> {
 
     public UserAdapter(Activity activity, int resource, int textViewResourceId, List<User> users){
         super(activity, resource, textViewResourceId, users);
-        defaultPfp=activity.getResources().getDrawable(R.drawable.default_pfp);
+        defaultPfp = AppCompatResources.getDrawable(activity, R.drawable.default_pfp);
         layoutInflater = activity.getLayoutInflater();
     }
 
