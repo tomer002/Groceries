@@ -131,9 +131,12 @@ public class ListSettingsActivity extends AppCompatActivity {
             Dialog dialog = new Dialog(this);
             dialog.setTitle("Edit list name");
             dialog.setContentView(R.layout.edit_list_name_layout);
+            EditText listNameEditText = dialog.findViewById(R.id.list_name);
+            listNameEditText.setText(listName);
+            listNameEditText.setSelection(listName.length());
             dialog.findViewById(R.id.cancel).setOnClickListener(view -> dialog.cancel());
             dialog.findViewById(R.id.confirm).setOnClickListener(view -> {
-                String newName = ((EditText) dialog.findViewById(R.id.list_name)).getText().toString();
+                String newName = listNameEditText.getText().toString();
                 if (newName.equals(listName)) {
                     dialog.cancel();
                     return;
