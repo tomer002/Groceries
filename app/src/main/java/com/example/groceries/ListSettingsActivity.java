@@ -5,6 +5,7 @@ import static com.example.groceries.GlobalVariables.mAuth;
 import static com.example.groceries.Keys.HAS_IMAGE;
 import static com.example.groceries.Keys.LISTS;
 import static com.example.groceries.Keys.LIST_IDS;
+import static com.example.groceries.Keys.NAME;
 import static com.example.groceries.Keys.NICKNAME;
 import static com.example.groceries.Keys.PARTICIPANTS;
 import static com.example.groceries.Keys.USERNAME;
@@ -17,6 +18,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -38,6 +40,7 @@ public class ListSettingsActivity extends AppCompatActivity {
     String listId;
     FirebaseStorage storage;
     DatabaseReference participantsRef;
+    String listName;
     ChildEventListener editorsListener = new ChildEventListener() {
         @Override
         public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
@@ -114,10 +117,36 @@ public class ListSettingsActivity extends AppCompatActivity {
         });
 
 
-        participantsRef=database.getReference(LISTS).child(listId).child(PARTICIPANTS);
-        adapter=new UserAdapter(this,0,0,usersList);
+        participantsRef = database.getReference(LISTS).child(listId).child(PARTICIPANTS);
+        adapter = new UserAdapter(this, 0, 0, usersList);
         editorListView.setAdapter(adapter);
 
+
+        database.getReference(LISTS + "/" + listId + "/" + NAME).get().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) return;
+            listName = (String) task.getResult().getValue();
+            ((TextView) findViewById(R.id.list_name)).setText("List name: " + listName);
+        });
+        findViewById(R.id.edit_list_name).setOnClickListener(v -> {
+            Dialog dialog = new Dialog(this);
+            dialog.setTitle("Edit list name");
+            dialog.setContentView(R.layout.edit_list_name_layout);
+            dialog.findViewById(R.id.cancel).setOnClickListener(view -> dialog.cancel());
+            dialog.findViewById(R.id.confirm).setOnClickListener(view -> {
+                String newName = ((EditText) dialog.findViewById(R.id.list_name)).getText().toString();
+                if (newName.equals(listName)) {
+                    dialog.cancel();
+                    return;
+                }
+                database.getReference(LISTS + "/" + listId + "/" + NAME).setValue(newName);
+                listName = newName;
+
+                ((TextView) findViewById(R.id.list_name)).setText("List name: " + listName);
+
+                dialog.cancel();
+            });
+            dialog.show();
+        });
 
     }
     public void leaveList(String listId){

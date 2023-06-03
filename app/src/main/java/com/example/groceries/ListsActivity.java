@@ -51,7 +51,6 @@ public class ListsActivity extends AppCompatActivity {
         listsScreenSetup();
     }
 
-
     public void loadLists(List<Object> listIds, ListAdapter adapter) {
         DatabaseReference listsRef = database.getReference(LISTS);
         if (listIds == null) listIds = Collections.EMPTY_LIST;

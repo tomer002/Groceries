@@ -13,6 +13,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.widget.EditText;
@@ -25,6 +26,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -89,7 +91,30 @@ public class SettingsActivity extends AppCompatActivity {
             nicknameEditText.requestFocus();
         });
 
-        findViewById(R.id.edit_pfp).setOnClickListener(v -> takePicture());
+        findViewById(R.id.edit_pfp).setOnClickListener(v -> {
+            Dialog dialog = new Dialog(this);
+            dialog.setTitle("Change profile picture");
+            dialog.setContentView(R.layout.edit_pfp_layout);
+            dialog.findViewById(R.id.cancel).setOnClickListener(view -> dialog.cancel());
+            dialog.findViewById(R.id.take_picture).setOnClickListener(view -> {
+                takePicture();
+                dialog.cancel();
+            });
+            dialog.findViewById(R.id.choose_from_gallery).setOnClickListener(view -> {
+                chooseFromGallery();
+                dialog.cancel();
+            });
+            dialog.show();
+        });
+
+
+    }
+
+    public void chooseFromGallery() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), 1);
     }
 
     public void takePicture() {
@@ -100,23 +125,33 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != RESULT_OK) return;
+        Bitmap bitmap;
         if (requestCode == 0) {
-            if (resultCode == RESULT_OK) {
-                Bitmap bitmap = (Bitmap) data.getExtras().get("data");
-                if (bitmap.getWidth() > 360 || bitmap.getHeight() > 360) {
-                    double ratio = 360 / Math.max(bitmap.getWidth(), bitmap.getHeight());
-                    bitmap = Bitmap.createScaledBitmap(bitmap, (int) (bitmap.getWidth() * ratio), (int) (bitmap.getHeight() * ratio), true);
-                }
-                ImageView pfp = findViewById(R.id.pfp);
-                pfp.setImageBitmap(bitmap);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-                storage.getReference("profile_pictures").child(mAuth.getUid()).putBytes(baos.toByteArray());
-                if (!hasImage) {
-                    hasImage = true;
-                    database.getReference(USERS + "/" + mAuth.getUid() + "/" + HAS_IMAGE).setValue(true);
-                }
+            bitmap = (Bitmap) data.getExtras().get("data");
+        } else if (requestCode == 1) {
+            Uri imageUri = data.getData();
+            try {
+                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+            } catch (IOException e) {
+                return;
             }
+        } else {
+            return;
+        }
+        if (bitmap.getWidth() > 360 || bitmap.getHeight() > 360) {
+            int max = Math.max(bitmap.getWidth(), bitmap.getHeight());
+            bitmap = Bitmap.createScaledBitmap(bitmap, (bitmap.getWidth() * 360) / max, (bitmap.getHeight() * 360) / max, true);
+            // ratio is 360/max therefore I multiply by 360 and divide by max
+        }
+        ImageView pfp = findViewById(R.id.pfp);
+        pfp.setImageBitmap(bitmap);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        storage.getReference("profile_pictures").child(mAuth.getUid()).putBytes(baos.toByteArray());
+        if (!hasImage) {
+            hasImage = true;
+            database.getReference(USERS + "/" + mAuth.getUid() + "/" + HAS_IMAGE).setValue(true);
         }
     }
 }
