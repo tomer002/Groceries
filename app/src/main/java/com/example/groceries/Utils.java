@@ -2,18 +2,14 @@ package com.example.groceries;
 
 import static com.example.groceries.GlobalVariables.database;
 import static com.example.groceries.GlobalVariables.mAuth;
-import static com.example.groceries.Keys.USERNAME;
 import static com.example.groceries.Keys.USERNAME_TO_ID;
-import static com.example.groceries.Keys.USERS;
 
 import android.app.Activity;
 import android.app.Dialog;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
-import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.Query;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -95,27 +91,5 @@ public class Utils {
                 .child(personId)
                 .child(Keys.LIST_IDS);
         Utils.addToDatabaseList(listIdsRef, listId);
-    }
-
-    public static void usernameSearch(String username, UsernameSearchListener listener) {
-        Query query = database.getReference(USERS).orderByChild(USERNAME).equalTo(username);
-        query.get().addOnCompleteListener(task -> {
-            if (!task.isSuccessful()) return;
-            DataSnapshot snapshot = task.getResult();
-            if (snapshot.exists()) {
-                DatabaseReference userRef = snapshot.getChildren().iterator().next().getRef();
-                listener.listen(userRef, UsernameSearchListener.EXISTS);
-            } else {
-                listener.listen(null, UsernameSearchListener.DOES_NOT_EXIST);
-            }
-        });
-    }
-
-    public interface UsernameSearchListener {
-        int EXISTS = 0;
-        int DOES_NOT_EXIST = 1;
-        int ERROR = 2;
-
-        void listen(DatabaseReference userRef, int state);
     }
 }
