@@ -20,7 +20,6 @@ public class ElementEditor {
         TextView name = dialog.findViewById(R.id.NameEditText);
         name.setText((String) element.get(NAME));
         dialog.findViewById(R.id.confirmButton).setOnClickListener(v -> {
-            //Log.d("txt", name.getText().toString());
             String nameStr = name.getText().toString();
 
             elementRef.child(NAME).setValue(nameStr);
