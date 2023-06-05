@@ -80,6 +80,7 @@ public class RegisterActivity extends AppCompatActivity {
                                         thisUserRef.child(NICKNAME).setValue(nickname);
 
                                         database.getReference(USERNAME_TO_ID).child(username).setValue(mAuth.getUid());
+
                                         Intent intent = new Intent(RegisterActivity.this, ListsActivity.class);
                                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                                         startActivity(intent);

@@ -19,6 +19,7 @@ import android.provider.MediaStore;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -132,8 +133,9 @@ public class SettingsActivity extends AppCompatActivity {
         } else if (requestCode == 1) {
             Uri imageUri = data.getData();
             try {
-                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+                bitmap = GetImageFromGallery.getBitmap(this, imageUri);
             } catch (IOException e) {
+                Toast.makeText(this, "error, try again", Toast.LENGTH_SHORT).show();
                 return;
             }
         } else {
