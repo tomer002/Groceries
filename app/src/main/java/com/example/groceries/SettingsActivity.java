@@ -13,13 +13,11 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -27,7 +25,6 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -101,21 +98,10 @@ public class SettingsActivity extends AppCompatActivity {
                 takePicture();
                 dialog.cancel();
             });
-            dialog.findViewById(R.id.choose_from_gallery).setOnClickListener(view -> {
-                chooseFromGallery();
-                dialog.cancel();
-            });
             dialog.show();
         });
 
 
-    }
-
-    public void chooseFromGallery() {
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), 1);
     }
 
     public void takePicture() {
@@ -130,14 +116,6 @@ public class SettingsActivity extends AppCompatActivity {
         Bitmap bitmap;
         if (requestCode == 0) {
             bitmap = (Bitmap) data.getExtras().get("data");
-        } else if (requestCode == 1) {
-            Uri imageUri = data.getData();
-            try {
-                bitmap = GetImageFromGallery.getBitmap(this, imageUri);
-            } catch (IOException e) {
-                Toast.makeText(this, "error, try again", Toast.LENGTH_SHORT).show();
-                return;
-            }
         } else {
             return;
         }
