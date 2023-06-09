@@ -9,6 +9,7 @@ import static com.example.groceries.Keys.USERS;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -32,6 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ListsActivity extends AppCompatActivity {
     private ValueEventListener listLoader;
     private ListAdapter adapter;
+    private BatteryBroadcastReceiver batteryBroadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +51,20 @@ public class ListsActivity extends AppCompatActivity {
             }
         };
         listsScreenSetup();
+        batteryBroadcastReceiver = new BatteryBroadcastReceiver(findViewById(R.id.battery_level));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(batteryBroadcastReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(batteryBroadcastReceiver);
     }
 
     public void loadLists(List<Object> listIds, ListAdapter adapter) {
