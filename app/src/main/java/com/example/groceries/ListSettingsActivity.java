@@ -34,14 +34,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * activity for editing the settings of a list
+ */
 public class ListSettingsActivity extends AppCompatActivity {
 
-    UserAdapter adapter;
-    String listId;
-    FirebaseStorage storage;
-    DatabaseReference participantsRef;
-    String listName;
-    ChildEventListener editorsListener = new ChildEventListener() {
+    UserAdapter adapter; // the array adapter of the list view of the users
+    String listId; // id of the list
+    FirebaseStorage storage; // instance of firebase storage
+    DatabaseReference participantsRef; // database reference to the participants list of participants
+    String listName; // name of the list
+    ChildEventListener editorsListener = new ChildEventListener() { // listener for when the list of editors change in the database
         @Override
         public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
             UserAdapter.User user = new UserAdapter.User();
@@ -52,17 +55,19 @@ public class ListSettingsActivity extends AppCompatActivity {
                 user.username = (String) userMap.get(USERNAME);
                 user.nickname = (String) userMap.get(NICKNAME);
                 if ((Boolean) userMap.get(HAS_IMAGE)) {
+                    // download image and set it
                     storage.getReference("profile_pictures").child(user.uid).getBytes(1024 * 1024)
                             .addOnCompleteListener(task1 -> {
                                 if (!task1.isSuccessful()) {
                                     user.image = null;
                                 } else {
                                     byte[] bytes = task1.getResult();
-                                    user.image = new BitmapDrawable(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));
+                                    user.image = new BitmapDrawable(BitmapFactory.decodeByteArray(bytes, 0, bytes.length)); // bitmap to drawable
                                 }
-                                adapter.add(user);
+                                adapter.add(user); // add user
                             });
                 } else {
+                    // add user with no image
                     user.image = null;
                     adapter.add(user);
                 }
@@ -71,22 +76,18 @@ public class ListSettingsActivity extends AppCompatActivity {
 
         @Override
         public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
         }
 
         @Override
         public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-
         }
 
         @Override
         public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
         }
 
         @Override
         public void onCancelled(@NonNull DatabaseError error) {
-
         }
     };
 
@@ -95,12 +96,12 @@ public class ListSettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_settings);
 
-        storage = FirebaseStorage.getInstance();
+        storage = FirebaseStorage.getInstance(); // create firebase storage instance
 
         ListView editorListView = findViewById(R.id.editors_list);
         ArrayList<UserAdapter.User> usersList = new ArrayList<>();
 
-        listId = getIntent().getStringExtra("list_id");
+        listId = getIntent().getStringExtra("list_id"); // get the list id from the extras
         findViewById(R.id.leave_list).setOnClickListener(v -> leaveList(listId));
 
         findViewById(R.id.add_editor).setOnClickListener(v -> {
@@ -117,7 +118,9 @@ public class ListSettingsActivity extends AppCompatActivity {
         });
 
 
-        participantsRef = database.getReference(LISTS).child(listId).child(PARTICIPANTS);
+        participantsRef = database.getReference(LISTS).child(listId).child(PARTICIPANTS); // get participant reference
+
+        // create adapter
         adapter = new UserAdapter(this, 0, 0, usersList);
         editorListView.setAdapter(adapter);
 
@@ -125,9 +128,9 @@ public class ListSettingsActivity extends AppCompatActivity {
         database.getReference(LISTS + "/" + listId + "/" + NAME).get().addOnCompleteListener(task -> {
             if (!task.isSuccessful()) return;
             listName = (String) task.getResult().getValue();
-            ((TextView) findViewById(R.id.list_name)).setText("List name: " + listName);
+            ((TextView) findViewById(R.id.list_name)).setText("List name: " + listName);// write the list name in text view
         });
-        findViewById(R.id.edit_list_name).setOnClickListener(v -> {
+        findViewById(R.id.edit_list_name).setOnClickListener(v -> { // make dialog for editing the list name
             Dialog dialog = new Dialog(this);
             dialog.setTitle("Edit list name");
             dialog.setContentView(R.layout.edit_list_name_layout);
@@ -141,7 +144,7 @@ public class ListSettingsActivity extends AppCompatActivity {
                     dialog.cancel();
                     return;
                 }
-                database.getReference(LISTS + "/" + listId + "/" + NAME).setValue(newName);
+                database.getReference(LISTS + "/" + listId + "/" + NAME).setValue(newName);// set list name
                 listName = newName;
 
                 ((TextView) findViewById(R.id.list_name)).setText("List name: " + listName);
@@ -152,41 +155,47 @@ public class ListSettingsActivity extends AppCompatActivity {
         });
 
     }
-    public void leaveList(String listId){
-        String uid=mAuth.getUid();
-        database.getReference(USERS).child(uid).child(LIST_IDS).get().addOnCompleteListener(task -> {
-            if (!task.isSuccessful())return;
-            List<Object> listIds= (List<Object>) task.getResult().getValue();
-            listIds.remove(listId);
+
+    /**
+     * method for leaving a list of groceries
+     *
+     * @param listId the id of the list
+     */
+    public void leaveList(String listId) {
+        String uid = mAuth.getUid(); // uid of the current user
+        database.getReference(USERS).child(uid).child(LIST_IDS).get().addOnCompleteListener(task -> { // get the list_ids of current user from database
+            if (!task.isSuccessful()) return;
+            List<Object> listIds = (List<Object>) task.getResult().getValue();
+            listIds.remove(listId); // remove the list id
             task.getResult().getRef().setValue(listIds);
 
-            Intent intent = new Intent(this,MainActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);// start main activity
             finish();
-
         });
         DatabaseReference listRef=database.getReference(LISTS).child(listId);
-        listRef.child(PARTICIPANTS).get().addOnCompleteListener(task -> {
-            if (!task.isSuccessful())return;
+        listRef.child(PARTICIPANTS).get().addOnCompleteListener(task -> { // get participants list
+            if (!task.isSuccessful()) return;
             List<Object> participants = (List<Object>) task.getResult().getValue();
-            participants.remove(uid);
-            if (participants.isEmpty()){
-                listRef.removeValue();
+            participants.remove(uid); // remove user id
+            if (participants.isEmpty()) {
+                listRef.removeValue();// if list no longer has participants delete the list to save storage in cloud
+            } else {
+                task.getResult().getRef().setValue(participants); // save the participants list without the user that left the list
             }
-            task.getResult().getRef().setValue(participants);
         });
     }
 
     @Override
     protected void onStart() {
-        participantsRef.addChildEventListener(editorsListener);
+        participantsRef.addChildEventListener(editorsListener);// add listener
         super.onStart();
     }
 
     @Override
     protected void onStop() {
-        participantsRef.removeEventListener(editorsListener);
+        participantsRef.removeEventListener(editorsListener);// remove listener
         super.onStop();
     }
 }

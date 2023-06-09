@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
@@ -20,10 +21,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The adapter to be used in the groceries list view
+ */
 public class GroceryAdapter extends ArrayAdapter<Map<String, Object>> {
-    Activity activity;
-    LayoutInflater layoutInflater;
-    DatabaseReference itemsRef;
+    Activity activity; // current activity
+    LayoutInflater layoutInflater; // the layout inflater of the activity
+    DatabaseReference itemsRef; // database reference to the groceries array
 
     public GroceryAdapter(Activity activity, int resource, int textViewResourceId, @NonNull List<Map<String, Object>> objects, DatabaseReference itemsRef) {
         super(activity, resource, textViewResourceId, objects);
@@ -42,29 +46,31 @@ public class GroceryAdapter extends ArrayAdapter<Map<String, Object>> {
             view = layoutInflater.inflate(R.layout.element_view, parent, false);
         }
 
-        HashMap<String, Object> element = (HashMap<String, Object>) getItem(position);
+        HashMap<String, Object> element = (HashMap<String, Object>) getItem(position); // gets the required item
 
         TextView name = view.findViewById(R.id.name);
         CompoundButton isChecked = view.findViewById(R.id.isChecked);
-        View edit = view.findViewById(R.id.confirmButton);
+        Button edit = view.findViewById(R.id.confirmButton);
 
-        if (name != null) name.setText((String) element.get(NAME));
+        // Put values in UI
+        name.setText((String) element.get(NAME));
+        isChecked.setChecked((Boolean) element.get(CHECKED));
 
-        if (isChecked != null) {
-            isChecked.setOnCheckedChangeListener(new OnCheckedChangeListener(element, itemsRef, position));
-            isChecked.setChecked((Boolean) element.get("checked"));
-        }
-        if (edit != null) {
-            edit.setOnClickListener(v -> ElementEditor.edit(activity, element, itemsRef.child(String.valueOf(position)), this));
-        }
+        // put listener to edit button and is checked button
+        isChecked.setOnCheckedChangeListener(new OnCheckedChangeListener(element, itemsRef, position));
+        edit.setOnClickListener(v -> ElementEditor.edit(activity, element, itemsRef.child(String.valueOf(position)), this));
+
         return view;
     }
 
+    /**
+     * A listener to when the user checks or unchecks an item
+     */
     private static class OnCheckedChangeListener implements CompoundButton.OnCheckedChangeListener {
 
-        HashMap<String, Object> element;
-        int index;
-        DatabaseReference itemsRef;
+        HashMap<String, Object> element; // The grocery
+        int index; // the index of the grocery in the adapter
+        DatabaseReference itemsRef; // reference to the items
 
         public OnCheckedChangeListener(HashMap<String, Object> element, DatabaseReference itemsRef, int index) {
             this.element = element;
@@ -74,8 +80,8 @@ public class GroceryAdapter extends ArrayAdapter<Map<String, Object>> {
 
         @Override
         public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-            itemsRef.child(String.valueOf(index)).child(CHECKED).setValue(b);
-            element.put(CHECKED, b);
+            itemsRef.child(String.valueOf(index)).child(CHECKED).setValue(b);// set the new value of the is checked
+            element.put(CHECKED, b); // edit the element
         }
     }
 }

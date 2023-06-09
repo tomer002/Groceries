@@ -1,5 +1,8 @@
 package com.example.groceries;
 
+/**
+ * Constants for the database keys
+ */
 public class Keys {
     public static final String NAME = "name";
     public static final String CHECKED = "checked";

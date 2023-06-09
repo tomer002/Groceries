@@ -12,8 +12,11 @@ import androidx.annotation.Nullable;
 
 import java.util.List;
 
+/**
+ * Adapter for the list names that the user is the editor of
+ */
 public class ListAdapter extends ArrayAdapter<String> {
-    LayoutInflater layoutInflater;
+    LayoutInflater layoutInflater; //  the layout inflater
 
     public ListAdapter(Activity activity, int resource, int textViewResourceId, List<String> listNames) {//, DatabaseReference listIdsRef){
         super(activity, resource, textViewResourceId, listNames);
@@ -32,7 +35,7 @@ public class ListAdapter extends ArrayAdapter<String> {
 
         String listName = getItem(position);
         TextView listNameTextView = view.findViewById(R.id.list_name);
-        listNameTextView.setText(listName);
+        listNameTextView.setText(listName); // edit the view with the list name
         return view;
     }
 }
