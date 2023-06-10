@@ -30,10 +30,12 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(this, RegisterActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
+            finish();
         } else {//if user is signed in open the landing screen
             Intent intent = new Intent(this, ListsActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
+            finish();
         }
     }
 }
