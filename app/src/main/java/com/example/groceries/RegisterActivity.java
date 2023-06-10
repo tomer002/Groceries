@@ -84,7 +84,7 @@ public class RegisterActivity extends AppCompatActivity {
         database.getReference(USERNAME_TO_ID).child(username)
                 .get().addOnCompleteListener(task -> {
                     if (!task.isSuccessful())
-                        Toast.makeText(RegisterActivity.this, "error", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(RegisterActivity.this, "Registration error", Toast.LENGTH_SHORT).show();
                     if (task.getResult().exists())
                         Toast.makeText(RegisterActivity.this, "username already exists", Toast.LENGTH_SHORT).show();
                     else { // Create this user if he is not already exist
@@ -115,7 +115,7 @@ public class RegisterActivity extends AppCompatActivity {
 
 
     /**
-     * Check if the username is legal
+     * Check if a username is legal
      *
      * @param username - the username
      * @return if the username is legal
